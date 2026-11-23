@@ -15,6 +15,15 @@ const titles = ['معرفی', 'عیب‌یابی', 'نقشه‌ها', 'عیوب 
 const icons = [Icons.info_outline, Icons.search, Icons.map_outlined,
   Icons.warning_amber, Icons.build_outlined];
 const gold = Color(0xFFFFCD65);
+const frenchDiagnostics = [
+  'استارت', 'برف‌پاک‌کن عقب', 'چراغ ترمز', 'چراغ دنده عقب (گیربکس دستی)',
+  'نور پایین', 'نور بالا', 'گرم‌کن شیشه عقب',
+  'شیشه‌بالابر عقب', 'قفل مرکزی', 'کولر', 'راهنما و فلاشر',
+  'شیشه‌بالابر جلو', 'چراغ کوچک', 'مه‌شکن عقب',
+  'فن خنک‌کننده J34 و J35', 'مه‌شکن جلو',
+  'فن خنک‌کننده S2000 و Bosch ME744', 'برف‌پاک‌کن جلو', 'شیشه‌شور', 'بوق',
+  'شناور داخل باک',
+];
 
 void main() => runApp(MaterialApp(
   locale: const Locale('fa'), supportedLocales: const [Locale('fa')],
@@ -177,10 +186,48 @@ class _SectionPageState extends State<SectionPage> {
           )));
         }
         final data = snapshot.data!;
-        final image = data['image'] as String? ?? '';
+        if (widget.system == systems[1] && widget.title == titles[1]) {
+          final published = data['articles'] is List
+            ? (data['articles'] as List).whereType<Map<String, dynamic>>().toList()
+            : <Map<String, dynamic>>[if (data.isNotEmpty) data];
+          final byTitle = {for (final row in published) (row['title'] as String).trim(): row};
+          final rows = <Map<String, dynamic>>[
+            for (final title in frenchDiagnostics) byTitle[title] ?? {'title': title},
+            for (final entry in byTitle.entries)
+              if (!frenchDiagnostics.contains(entry.key)) entry.value,
+          ];
+          if (rows.isEmpty) return const Center(child: Text('هنوز مطلبی منتشر نشده است.'));
+          return ListView.separated(
+            padding: const EdgeInsets.all(16), itemCount: rows.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, i) => Card(child: ListTile(
+              title: Text(rows[i]['title'] as String),
+              trailing: const Icon(Icons.chevron_left),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                builder: (_) => Scaffold(appBar: AppBar(title: Text(rows[i]['title'] as String)),
+                  body: rows[i]['body'] is String
+                    ? ArticleView(data: rows[i], system: widget.system)
+                    : const Center(child: Text('هنوز مطلبی منتشر نشده است.'))),
+              )),
+            )),
+          );
+        }
         if (data.isEmpty) return const Center(child: Text('هنوز مطلبی منتشر نشده است.'));
-        return ListView(padding: const EdgeInsets.all(16), children: [
-          Text(widget.system),
+        return ArticleView(data: data, system: widget.system);
+      },
+    ),
+  );
+}
+
+class ArticleView extends StatelessWidget {
+  const ArticleView({required this.data, required this.system});
+  final Map<String, dynamic> data;
+  final String system;
+  @override
+  Widget build(BuildContext context) {
+    final image = data['image'] as String? ?? '';
+    return ListView(padding: const EdgeInsets.all(16), children: [
+          Text(system),
           const SizedBox(height: 12),
           if ((data['title'] as String).isNotEmpty)
             Text(data['title'] as String, style: Theme.of(context).textTheme.titleLarge),
@@ -202,9 +249,7 @@ class _SectionPageState extends State<SectionPage> {
             child: InteractiveViewer(child: Image.memory(base64Decode(image),
               errorBuilder: (_, __, ___) => const Text('عکس قابل نمایش نیست.')))),
         ]);
-      },
-    ),
-  );
+  }
 }
 
 class HomeSlides extends StatefulWidget {
