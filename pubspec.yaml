@@ -1,0 +1,21 @@
+name: carplex
+description: Carplex Android preview
+publish_to: none
+version: 0.1.0+1
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/slide0.webp
+    - assets/slide1.webp
+    - assets/slide2.webp
+  fonts:
+    - family: BTitr
+      fonts:
+        - asset: assets/BTitr.ttf
