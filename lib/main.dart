@@ -25,6 +25,55 @@ const frenchDiagnostics = [
   'شناور داخل باک',
 ];
 
+const diagnosticIcons = <IconData>[
+  Icons.bolt, Icons.wash, Icons.stop_circle_outlined, Icons.keyboard_return,
+  Icons.south_east, Icons.east, Icons.waves, Icons.arrow_upward,
+  Icons.lock_outline, Icons.ac_unit, Icons.swap_horiz, Icons.swap_vert,
+  Icons.lightbulb_outline, Icons.blur_on, Icons.air, Icons.foggy,
+  Icons.toys, Icons.cleaning_services, Icons.water_drop_outlined,
+  Icons.campaign_outlined, Icons.local_gas_station_outlined,
+];
+
+class PartSketch extends CustomPainter {
+  const PartSketch(this.index, this.color);
+  final int index;
+  final Color color;
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.scale(size.width / 32, size.height / 32);
+    final p = Paint()..color = color..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8..strokeCap = StrokeCap.round..strokeJoin = StrokeJoin.round;
+    void line(double x, double y, double a, double b) =>
+      canvas.drawLine(Offset(x, y), Offset(a, b), p);
+    void box(double x, double y, double w, double h) => canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(x, y, w, h), const Radius.circular(2)), p);
+    if (index == 0) {
+      box(3, 14, 17, 11); box(7, 8, 12, 6); box(20, 16, 5, 7);
+      line(25, 19.5, 29, 19.5); line(29, 17, 29, 22);
+      line(7, 8, 7, 5); line(6, 24, 6, 15);
+    } else if (index == 1 || index == 17) {
+      final windshield = Path()..moveTo(3, 24)..lineTo(6, 10)
+        ..quadraticBezierTo(16, 5, 26, 10)..lineTo(29, 24)..close();
+      canvas.drawPath(windshield, p);
+      line(16, 24, index == 1 ? 12 : 20, 16);
+      line(9, 18, 23, 14);
+      if (index == 17) line(9, 23, 12, 19);
+    } else if (index == 2 || index == 3) {
+      box(4, 11, 24, 11);
+      line(16, 11, 16, 22);
+      if (index == 2) {
+        line(8, 15, 12, 15); line(8, 18, 12, 18);
+        line(20, 15, 24, 15); line(20, 18, 24, 18);
+      } else {
+        line(10, 16, 23, 16); line(10, 16, 13, 13); line(10, 16, 13, 19);
+      }
+    }
+  }
+  @override
+  bool shouldRepaint(covariant PartSketch oldDelegate) =>
+    index != oldDelegate.index || color != oldDelegate.color;
+}
+
 void main() => runApp(MaterialApp(
   locale: const Locale('fa'), supportedLocales: const [Locale('fa')],
   localizationsDelegates: GlobalMaterialLocalizations.delegates,
@@ -166,9 +215,15 @@ class _SectionPageState extends State<SectionPage> {
 
   void refresh() => setState(() => content = load());
 
+  bool get isFrenchDiagnostics => widget.system == systems[1] && widget.title == titles[1];
+
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(widget.title), actions: [
+    backgroundColor: isFrenchDiagnostics ? const Color(0xFFF0F6FC) : null,
+    appBar: AppBar(title: Text(widget.title),
+      backgroundColor: isFrenchDiagnostics ? const Color(0xFFFFDA55) : null,
+      foregroundColor: isFrenchDiagnostics ? const Color(0xFF182D44) : null,
+      actions: [
       IconButton(onPressed: refresh, icon: const Icon(Icons.refresh), tooltip: 'دریافت دوباره'),
     ]),
     body: FutureBuilder<Map<String, dynamic>>(
@@ -186,7 +241,7 @@ class _SectionPageState extends State<SectionPage> {
           )));
         }
         final data = snapshot.data!;
-        if (widget.system == systems[1] && widget.title == titles[1]) {
+        if (isFrenchDiagnostics) {
           final published = data['articles'] is List
             ? (data['articles'] as List).whereType<Map<String, dynamic>>().toList()
             : <Map<String, dynamic>>[if (data.isNotEmpty) data];
@@ -200,16 +255,42 @@ class _SectionPageState extends State<SectionPage> {
           return ListView.separated(
             padding: const EdgeInsets.all(16), itemCount: rows.length,
             separatorBuilder: (_, __) => const SizedBox(height: 8),
-            itemBuilder: (context, i) => Card(child: ListTile(
-              title: Text(rows[i]['title'] as String),
-              trailing: const Icon(Icons.chevron_left),
-              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
-                builder: (_) => Scaffold(appBar: AppBar(title: Text(rows[i]['title'] as String)),
-                  body: rows[i]['body'] is String
-                    ? ArticleView(data: rows[i], system: widget.system)
-                    : const Center(child: Text('هنوز مطلبی منتشر نشده است.'))),
-              )),
-            )),
+            itemBuilder: (context, i) {
+              final title = rows[i]['title'] as String;
+              final index = frenchDiagnostics.indexOf(title);
+              const accents = [Color(0xFF125CA8), Color(0xFF006D65),
+                Color(0xFF9D3744), Color(0xFF67419A), Color(0xFF805200)];
+              final accent = accents[i % accents.length];
+              return Card(
+                elevation: 0,
+                margin: EdgeInsets.zero,
+                color: Colors.white,
+                surfaceTintColor: Colors.transparent,
+                clipBehavior: Clip.antiAlias,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(color: Color(0xFFD8E6F4))),
+                child: ListTile(
+                  minTileHeight: 68,
+                  leading: Container(
+                    width: 46, height: 46, alignment: Alignment.center,
+                    decoration: BoxDecoration(color: accent.withAlpha(24),
+                      borderRadius: BorderRadius.circular(12)),
+                    child: index == 0 || index == 1 || index == 2 || index == 3 || index == 17
+                      ? CustomPaint(size: const Size.square(30), painter: PartSketch(index, accent))
+                      : Icon(index < 0 ? Icons.build_outlined : diagnosticIcons[index], color: accent),
+                  ),
+                  title: Text(title, style: const TextStyle(color: Color(0xFF182D44),
+                    fontWeight: FontWeight.bold)),
+                  trailing: Icon(Icons.chevron_left, color: accent),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                    builder: (_) => Scaffold(appBar: AppBar(title: Text(title)),
+                      body: rows[i]['body'] is String
+                        ? ArticleView(data: rows[i], system: widget.system)
+                        : const Center(child: Text('هنوز مطلبی منتشر نشده است.'))),
+                  )),
+                ),
+              );
+            },
           );
         }
         if (data.isEmpty) return const Center(child: Text('هنوز مطلبی منتشر نشده است.'));
