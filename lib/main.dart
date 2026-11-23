@@ -185,7 +185,19 @@ class _SectionPageState extends State<SectionPage> {
           if ((data['title'] as String).isNotEmpty)
             Text(data['title'] as String, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
-          Text(data['body'] as String),
+          for (final block in (data['body'] as String).split(RegExp(r'\n\s*\n')))
+            if (block.trim().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 14),
+                child: Text(
+                  block.trim().startsWith('## ') ? block.trim().substring(3) : block.trim(),
+                  textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.start,
+                  style: block.trim().startsWith('## ')
+                    ? const TextStyle(fontSize: 22, color: Color(0xFF82DCFF), height: 1.5)
+                    : const TextStyle(fontSize: 16, height: 1.8),
+                ),
+              ),
           if (image.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 16),
             child: InteractiveViewer(child: Image.memory(base64Decode(image),
               errorBuilder: (_, __, ___) => const Text('عکس قابل نمایش نیست.')))),
