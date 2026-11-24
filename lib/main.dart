@@ -121,35 +121,84 @@ class Home extends StatelessWidget {
         ),
       ])),
     ),
-    body: CustomScrollView(slivers: [
+    body: SafeArea(top: false, child: CustomScrollView(slivers: [
       const SliverToBoxAdapter(child: HomeSlides()),
-      SliverPadding(padding: const EdgeInsets.all(14), sliver: SliverGrid.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, mainAxisExtent: 142),
+      SliverPadding(padding: const EdgeInsets.fromLTRB(14, 14, 14, 28), sliver: SliverGrid.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12,
+          mainAxisExtent: 122.0 + MediaQuery.textScalerOf(context).scale(40)),
         itemCount: systems.length,
-        itemBuilder: (context, i) => Card(color: Colors.white, surfaceTintColor: Colors.transparent,
-          elevation: 2, margin: EdgeInsets.zero, clipBehavior: Clip.antiAlias,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: InkWell(onTap: () => openSystem(context, systems[i]),
-            child: Padding(padding: const EdgeInsets.all(8), child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, children: [
-                CircleAvatar(radius: 25, backgroundColor: const Color(0xFF103B67),
-                  foregroundColor: const Color(0xFF82DCFF), child: Icon([
-                    Icons.directions_car, Icons.electric_car, Icons.memory,
-                    Icons.bolt, Icons.hub, Icons.speed, Icons.developer_board,
-                    Icons.settings, Icons.directions_car_filled,
-                  ][i])),
-                const SizedBox(height: 8),
-                Flexible(child: Text(systems[i], textAlign: TextAlign.center,
-                  maxLines: 2, overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Color(0xFF8A5C00), fontWeight: FontWeight.bold))),
-              ],
-            )),
-          ),
-        ),
+        itemBuilder: (context, i) => SystemCard(index: i,
+          onTap: () => openSystem(context, systems[i])),
       )),
-    ]),
+    ])),
   );
+}
+
+class SystemCard extends StatelessWidget {
+  const SystemCard({required this.index, required this.onTap});
+  final int index;
+  final VoidCallback onTap;
+
+  static const marks = <(String, IconData, Color)>[
+    ('MUX 0', Icons.directions_car_outlined, Color(0xFF264E88)),
+    ('FR', Icons.electric_car, Color(0xFF275F91)),
+    ('SP', Icons.memory, Color(0xFF11665C)),
+    ('ECOMAX', Icons.bolt, Color(0xFF8B4B14)),
+    ('SMS', Icons.hub, Color(0xFF674198)),
+    ('CRUISE', Icons.speed, Color(0xFF973C59)),
+    ('SP 1', Icons.developer_board, Color(0xFF32643C)),
+    ('CEC', Icons.settings_input_component, Color(0xFF3D4D91)),
+    ('SAIPA', Icons.directions_car_filled, Color(0xFF9C442E)),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final (mark, icon, accent) = marks[index];
+    return Card(
+      color: Colors.white, surfaceTintColor: Colors.transparent,
+      elevation: 1, shadowColor: accent.withAlpha(55), margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(21),
+        side: BorderSide(color: accent.withAlpha(46))),
+      child: DecoratedBox(
+        decoration: BoxDecoration(gradient: LinearGradient(
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
+          colors: [accent.withAlpha(22), Colors.white])),
+        child: InkWell(onTap: onTap, child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            ExcludeSemantics(child: Container(
+              width: 72, height: 66,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(19),
+                gradient: LinearGradient(begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [accent, Color.lerp(accent, Colors.black, .32)!]),
+                border: Border.all(color: Colors.white.withAlpha(165)),
+              ),
+              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Icon(icon, size: 28, color: Colors.white),
+                const SizedBox(height: 3),
+                SizedBox(width: 63, height: 15, child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(mark, textDirection: TextDirection.ltr,
+                    style: const TextStyle(fontFamily: 'Roboto', fontSize: 10,
+                      letterSpacing: 1, fontWeight: FontWeight.w800, color: Colors.white)),
+                )),
+              ]),
+            )),
+            const SizedBox(height: 9),
+            Flexible(child: Text(systems[index], textAlign: TextAlign.center,
+              maxLines: 3, overflow: TextOverflow.ellipsis,
+              style: TextStyle(inherit: false, fontFamily: 'sans-serif',
+                fontSize: 15, height: 1.35, fontWeight: FontWeight.w700,
+                color: Color.lerp(accent, const Color(0xFF172438), .55)))),
+          ]),
+        )),
+      ),
+    );
+  }
 }
 
 class Details extends StatelessWidget {
@@ -243,7 +292,7 @@ class _SectionPageState extends State<SectionPage> {
       actions: [
       IconButton(onPressed: refresh, icon: const Icon(Icons.refresh), tooltip: 'دریافت دوباره'),
     ]),
-    body: FutureBuilder<Map<String, dynamic>>(
+    body: SafeArea(top: false, child: FutureBuilder<Map<String, dynamic>>(
       future: content,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
@@ -270,7 +319,7 @@ class _SectionPageState extends State<SectionPage> {
           ];
           if (rows.isEmpty) return const Center(child: Text('هنوز مطلبی منتشر نشده است.'));
           return ListView.separated(
-            padding: const EdgeInsets.all(16), itemCount: rows.length,
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 28), itemCount: rows.length,
             separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (context, i) {
               final title = rows[i]['title'] as String;
@@ -301,9 +350,9 @@ class _SectionPageState extends State<SectionPage> {
                   trailing: Icon(Icons.chevron_left, color: accent),
                   onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
                     builder: (_) => Scaffold(appBar: AppBar(title: Text(title)),
-                      body: rows[i]['body'] is String
-                        ? ArticleView(data: rows[i], system: widget.system)
-                        : const Center(child: Text('هنوز مطلبی منتشر نشده است.'))),
+                      body: SafeArea(top: false, child: rows[i]['body'] is String
+                        ? ArticleView(data: rows[i], system: widget.system, section: widget.title)
+                        : const Center(child: Text('هنوز مطلبی منتشر نشده است.')))),
                   )),
                 ),
               );
@@ -311,37 +360,58 @@ class _SectionPageState extends State<SectionPage> {
           );
         }
         if (data.isEmpty) return const Center(child: Text('هنوز مطلبی منتشر نشده است.'));
-        return ArticleView(data: data, system: widget.system);
+        return ArticleView(data: data, system: widget.system, section: widget.title);
       },
-    ),
+    )),
   );
 }
 
 class ArticleView extends StatelessWidget {
-  const ArticleView({required this.data, required this.system});
+  const ArticleView({required this.data, required this.system, required this.section});
   final Map<String, dynamic> data;
   final String system;
+  final String section;
   @override
   Widget build(BuildContext context) {
     final image = data['image'] as String? ?? '';
-    return ListView(padding: const EdgeInsets.all(16), children: [
-          Text(system),
-          const SizedBox(height: 12),
-          if ((data['title'] as String).isNotEmpty)
-            Text(data['title'] as String, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
+    final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    final palette = dark
+        ? const [Color(0xFFF3CE82), Color(0xFF87DEC8), Color(0xFFCDBAF9)]
+        : const [Color(0xFF765000), Color(0xFF006452), Color(0xFF614097)];
+    final index = titles.indexOf(section);
+    final accent = palette[(index < 0 ? 0 : index) % palette.length];
+    return ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 28), children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: accent.withAlpha(22),
+              border: Border.all(color: accent.withAlpha(65)),
+              borderRadius: BorderRadius.circular(18)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(system, style: theme.textTheme.labelLarge?.copyWith(color: accent)),
+              if ((data['title'] as String).isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(data['title'] as String, style: theme.textTheme.titleLarge?.copyWith(height: 1.4)),
+              ],
+            ]),
+          ),
+          const SizedBox(height: 18),
           for (final block in (data['body'] as String).split(RegExp(r'\n\s*\n')))
             if (block.trim().isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(bottom: 14),
-                child: Text(
-                  block.trim().startsWith('## ') ? block.trim().substring(3) : block.trim(),
-                  textDirection: TextDirection.rtl,
-                  textAlign: TextAlign.start,
-                  style: block.trim().startsWith('## ')
-                    ? const TextStyle(fontSize: 22, color: Color(0xFF82DCFF), height: 1.5)
-                    : const TextStyle(fontSize: 16, height: 1.8),
-                ),
+                child: block.trim().startsWith('## ')
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(color: accent.withAlpha(16),
+                        border: Border(right: BorderSide(color: accent, width: 3))),
+                      child: Text(block.trim().substring(3), textDirection: TextDirection.rtl,
+                        textAlign: TextAlign.start,
+                        style: TextStyle(fontSize: 20, color: accent, height: 1.5)),
+                    )
+                  : Text(block.trim(), textDirection: TextDirection.rtl,
+                      textAlign: TextAlign.start,
+                      style: TextStyle(fontSize: 16, height: 1.85, color: theme.colorScheme.onSurface)),
               ),
           if (image.isNotEmpty) Padding(
             padding: const EdgeInsets.only(top: 16),
