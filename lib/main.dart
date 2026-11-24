@@ -95,15 +95,32 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: const Color(0xFFF6F7FA),
-    appBar: AppBar(title: const Text('خانه'), centerTitle: true,
+    appBar: AppBar(title: const Text('Carplex', style: TextStyle(
+      fontFamily: 'Roboto', fontWeight: FontWeight.w800, letterSpacing: 1.2)), centerTitle: true,
       backgroundColor: const Color(0xFFFFD32A), foregroundColor: const Color(0xFF292000)),
-    drawer: Drawer(child: SafeArea(child: ListView(children: [
-      const ListTile(leading: Icon(Icons.bolt, color: gold), title: Text('کارپلکس')),
-      for (final system in systems) ListTile(title: Text(system), onTap: () {
-        Navigator.of(context).pop();
-        openSystem(context, system);
-      }),
-    ]))),
+    drawer: Drawer(
+      backgroundColor: const Color(0xFFF0F6FC),
+      surfaceTintColor: Colors.transparent,
+      child: SafeArea(child: ListView(padding: const EdgeInsets.all(12), children: [
+        Card(color: const Color(0xFF103B67), child: ListTile(
+          leading: const Icon(Icons.bolt, color: gold),
+          title: const Text('کارپلکس', style: TextStyle(color: Colors.white)),
+        )),
+        const SizedBox(height: 8),
+        for (final system in systems) Padding(
+          padding: const EdgeInsets.only(bottom: 5),
+          child: ListTile(
+            tileColor: Colors.white,
+            textColor: const Color(0xFF182D44),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            title: Text(system), onTap: () {
+              Navigator.of(context).pop();
+              openSystem(context, system);
+            },
+          ),
+        ),
+      ])),
+    ),
     body: CustomScrollView(slivers: [
       const SliverToBoxAdapter(child: HomeSlides()),
       SliverPadding(padding: const EdgeInsets.all(14), sliver: SliverGrid.builder(
@@ -326,9 +343,26 @@ class ArticleView extends StatelessWidget {
                     : const TextStyle(fontSize: 16, height: 1.8),
                 ),
               ),
-          if (image.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 16),
-            child: InteractiveViewer(child: Image.memory(base64Decode(image),
-              errorBuilder: (_, __, ___) => const Text('عکس قابل نمایش نیست.')))),
+          if (image.isNotEmpty) Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFFE3F4FF), gold]),
+                borderRadius: BorderRadius.circular(17),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: InteractiveViewer(child: Image.memory(base64Decode(image),
+                  width: double.infinity, fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const ColoredBox(
+                    color: Colors.white, child: Text('عکس قابل نمایش نیست.',
+                      style: TextStyle(color: Color(0xFF182D44))),
+                  ),
+                )),
+              ),
+            ),
+          ),
         ]);
   }
 }
@@ -357,12 +391,17 @@ class _HomeSlidesState extends State<HomeSlides> {
   @override
   Widget build(BuildContext context) => AspectRatio(
     aspectRatio: 16 / 9,
-    child: ColoredBox(color: const Color(0xFF103B67), child: Column(children: [
-      Expanded(child: AnimatedSwitcher(duration: const Duration(milliseconds: 450),
+    child: ClipRect(child: ColoredBox(
+      color: const Color(0xFF103B67),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 450),
+        layoutBuilder: (current, previous) => Stack(fit: StackFit.expand, children: [
+          ...previous,
+          if (current != null) current,
+        ]),
         child: Image.asset('assets/slide$index.webp', key: ValueKey(index),
-          fit: BoxFit.contain))),
-      const Text('کارپلکس', style: TextStyle(color: Colors.white, fontSize: 22)),
-      const SizedBox(height: 6),
-    ])),
+          fit: BoxFit.cover),
+      ),
+    )),
   );
 }
