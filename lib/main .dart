@@ -423,7 +423,10 @@ class ArticleView extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: InteractiveViewer(child: _articleImage(image)),
+                child: SizedBox(
+                  height: 300,
+                  child: InteractiveViewer(child: _articleImage(image)),
+                ),
               ),
             ),
           ),
@@ -441,6 +444,9 @@ Widget _articleImage(String source) {
   final uri = Uri.tryParse(value);
   if (uri != null && (uri.scheme == 'https' || uri.scheme == 'http') && uri.host.isNotEmpty) {
     return Image.network(value, width: double.infinity, fit: BoxFit.contain,
+      loadingBuilder: (context, child, progress) => progress == null
+        ? child
+        : const Center(child: CircularProgressIndicator()),
       errorBuilder: (_, __, ___) => fallback);
   }
   try {
