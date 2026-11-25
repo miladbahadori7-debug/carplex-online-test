@@ -425,7 +425,23 @@ class ArticleView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 child: SizedBox(
                   height: 300,
-                  child: InteractiveViewer(child: _articleImage(image)),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => Navigator.of(context).push<void>(
+                      MaterialPageRoute<void>(builder: (_) => Scaffold(
+                        backgroundColor: Colors.black,
+                        appBar: AppBar(title: const Text('تصویر عیب‌یابی')),
+                        body: SizedBox.expand(
+                          child: InteractiveViewer(
+                            minScale: 1,
+                            maxScale: 5,
+                            child: _articleImage(image),
+                          ),
+                        ),
+                      )),
+                    ),
+                    child: _articleImage(image),
+                  ),
                 ),
               ),
             ),
