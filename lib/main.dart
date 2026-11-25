@@ -12,8 +12,10 @@ const systems = [
   'تک‌نود سازه پویش', 'سیستم هوشمند CEC', 'مالتی‌پلکس سایپا',
 ];
 const titles = ['معرفی', 'عیب‌یابی', 'نقشه‌ها', 'عیوب شایع', 'تعمیر نود'];
-const icons = [Icons.info_outline, Icons.search, Icons.map_outlined,
-  Icons.warning_amber, Icons.build_outlined];
+const icons = [Icons.menu_book_outlined, Icons.monitor_heart_outlined,
+  Icons.account_tree_outlined, Icons.warning_amber_rounded, Icons.memory_outlined];
+const sectionColors = [Color(0xFF24569B), Color(0xFF007561), Color(0xFF6041A1),
+  Color(0xFF995107), Color(0xFF9B365D)];
 const gold = Color(0xFFFFCD65);
 const frenchDiagnostics = [
   'استارت', 'برف‌پاک‌کن عقب', 'چراغ ترمز', 'چراغ دنده عقب (گیربکس دستی)',
@@ -123,6 +125,20 @@ class Home extends StatelessWidget {
     ),
     body: SafeArea(top: false, child: CustomScrollView(slivers: [
       const SliverToBoxAdapter(child: HomeSlides()),
+      SliverToBoxAdapter(child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
+        child: Card(color: const Color(0xFF103B67), clipBehavior: Clip.antiAlias,
+          child: ListTile(
+            minTileHeight: 76,
+            leading: const Icon(Icons.monitor_heart_outlined, color: gold, size: 32),
+            title: const Text('پیکره‌بندی', style: TextStyle(color: Colors.white, fontSize: 22)),
+            trailing: const Icon(Icons.chevron_left, color: gold),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+              builder: (_) => const IkcoGallery(),
+            )),
+          ),
+        ),
+      )),
       SliverPadding(padding: const EdgeInsets.fromLTRB(14, 14, 14, 28), sliver: SliverGrid.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12,
@@ -132,6 +148,57 @@ class Home extends StatelessWidget {
           onTap: () => openSystem(context, systems[i])),
       )),
     ])),
+  );
+}
+
+class IkcoGallery extends StatelessWidget {
+  const IkcoGallery({super.key});
+
+  static const imageTitles = [
+    'BCM (CBM) پژو ۲۰۶ جدید فاز یک',
+    'FCM (FAM) پژو ۲۰۶ جدید فاز یک',
+    'ICN پژو ۲۰۶ جدید فاز یک',
+    'BCM پژو ۲۰۶ جدید سازه پویش',
+    'FCM (EBCM) پژو ۲۰۶ جدید سازه پویش',
+    'ICN پژو ۲۰۶ جدید سازه پویش',
+    'CCN رانا فاز صفر', 'FN رانا فاز صفر', 'MCN رانا فاز صفر',
+    'CCN سمند و دنا', 'RN سمند و دنا', 'DCN سمند و دنا',
+    'FN سمند و دنا', 'ICN سمند و دنا',
+  ];
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('پیکره‌بندی با آیکو دیاگ')),
+    body: SafeArea(child: ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: imageTitles.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      itemBuilder: (context, index) {
+        final number = '${index + 1}'.padLeft(2, '0');
+        final title = imageTitles[index];
+        final url = 'https://miladbahadori7-debug.github.io/carplex-online-test/ikco/$number.webp';
+        return Card(
+          clipBehavior: Clip.antiAlias,
+          child: ListTile(
+            minTileHeight: 72,
+            leading: const Icon(Icons.monitor_heart_outlined, color: gold),
+            title: Text(title),
+            trailing: const Icon(Icons.chevron_left),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+              builder: (_) => Scaffold(
+                backgroundColor: Colors.black,
+                appBar: AppBar(title: Text(title)),
+                body: SafeArea(child: SizedBox.expand(child: InteractiveViewer(
+                  minScale: 1,
+                  maxScale: 5,
+                  child: _articleImage(url),
+                ))),
+              ),
+            )),
+          ),
+        );
+      },
+    )),
   );
 }
 
@@ -212,20 +279,23 @@ class Details extends StatelessWidget {
     body: SafeArea(child: ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: titles.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 14),
       itemBuilder: (context, i) => Card(
         color: Colors.white,
+        elevation: 2,
         surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: sectionColors[i].withAlpha(42))),
         child: ListTile(
-          minTileHeight: 72,
-          leading: CircleAvatar(backgroundColor: const Color(0xFF103B67),
-            foregroundColor: Colors.white, child: Icon(icons[i])),
+          minTileHeight: 88,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: CircleAvatar(radius: 25, backgroundColor: sectionColors[i].withAlpha(24),
+            foregroundColor: sectionColors[i], child: Icon(icons[i], size: 29)),
           title: Text(titles[i], style: const TextStyle(
-            color: Color(0xFF292000), fontWeight: FontWeight.bold)),
-          trailing: const Icon(Icons.chevron_left, color: Color(0xFF8A5C00)),
+            color: Color(0xFF182D44), fontSize: 22, fontWeight: FontWeight.bold)),
+          trailing: Icon(Icons.chevron_left, color: sectionColors[i]),
           onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
             builder: (_) => SectionPage(system: system, title: titles[i]),
           )),
@@ -391,7 +461,8 @@ class ArticleView extends StatelessWidget {
               Text(system, style: theme.textTheme.labelLarge?.copyWith(color: accent)),
               if ((data['title'] as String).isNotEmpty) ...[
                 const SizedBox(height: 6),
-                Text(data['title'] as String, style: theme.textTheme.titleLarge?.copyWith(height: 1.4)),
+                Text(data['title'] as String, style: theme.textTheme.titleLarge?.copyWith(
+                  height: 1.4, fontSize: 28, color: accent)),
               ],
             ]),
           ),
@@ -407,11 +478,9 @@ class ArticleView extends StatelessWidget {
                         border: Border(right: BorderSide(color: accent, width: 3))),
                       child: Text(block.trim().substring(3), textDirection: TextDirection.rtl,
                         textAlign: TextAlign.start,
-                        style: TextStyle(fontSize: 20, color: accent, height: 1.5)),
+                        style: TextStyle(fontSize: 24, color: accent, height: 1.5)),
                     )
-                  : Text(block.trim(), textDirection: TextDirection.rtl,
-                      textAlign: TextAlign.start,
-                      style: TextStyle(fontSize: 16, height: 1.85, color: theme.colorScheme.onSurface)),
+                  : _diagnosticParagraph(block.trim(), theme, accent, section == 'عیب‌یابی'),
               ),
           if (image.isNotEmpty) Padding(
             padding: const EdgeInsets.only(top: 16),
@@ -471,6 +540,34 @@ Widget _articleImage(String source) {
   } on FormatException {
     return fallback;
   }
+}
+
+Widget _diagnosticParagraph(String text, ThemeData theme, Color accent, bool highlight) {
+  final spans = <TextSpan>[];
+  final heading = RegExp(r'^(?:روش|روشن|آموزش)\s+عیب[‌ ]?یابی[^:\n]{0,36}:');
+  final keywords = RegExp(
+    r'(?:سوکت\s+[0-9۰-۹٠-٩]+\s*پایه(?:\s*[‌ ]?ی)?(?:\s+(?:مشکی|خاکستری|سفید|سبز|قهوه‌ای|آبی))?|پایه(?:‌های| های|ٔ)?\s+[0-9۰-۹٠-٩]+(?:\s*و\s*[0-9۰-۹٠-٩]+)?|[0-9۰-۹٠-٩]+\s*ولت|لامپ\s+تست|دستگاه\s+دیاگ|BSI|BM[0-9۰-۹]+|BSM|ECU|COM\s*[0-9۰-۹٠-٩]+)',
+    caseSensitive: false,
+  );
+  var end = 0;
+  final title = highlight ? heading.firstMatch(text) : null;
+  if (title != null) {
+    spans.add(TextSpan(text: title[0], style: TextStyle(color: accent, fontSize: 22)));
+    end = title.end;
+  }
+  if (highlight) {
+    for (final match in keywords.allMatches(text, end)) {
+      spans.add(TextSpan(text: text.substring(end, match.start)));
+      spans.add(TextSpan(text: match[0], style: TextStyle(
+        color: theme.brightness == Brightness.dark ? gold : const Color(0xFF765000),
+      )));
+      end = match.end;
+    }
+  }
+  spans.add(TextSpan(text: text.substring(end)));
+  return Text.rich(TextSpan(children: spans), textDirection: TextDirection.rtl,
+    textAlign: TextAlign.start, style: TextStyle(fontSize: 16, height: 1.85,
+      color: theme.colorScheme.onSurface));
 }
 
 class HomeSlides extends StatefulWidget {
