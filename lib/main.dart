@@ -423,17 +423,31 @@ class ArticleView extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: InteractiveViewer(child: Image.memory(base64Decode(image),
-                  width: double.infinity, fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const ColoredBox(
-                    color: Colors.white, child: Text('عکس قابل نمایش نیست.',
-                      style: TextStyle(color: Color(0xFF182D44))),
-                  ),
-                )),
+                child: InteractiveViewer(child: _articleImage(image)),
               ),
             ),
           ),
         ]);
+  }
+}
+
+Widget _articleImage(String source) {
+  const fallback = ColoredBox(
+    color: Colors.white,
+    child: Text('عکس قابل نمایش نیست.',
+      style: TextStyle(color: Color(0xFF182D44))),
+  );
+  final value = source.trim();
+  final uri = Uri.tryParse(value);
+  if (uri != null && (uri.scheme == 'https' || uri.scheme == 'http') && uri.host.isNotEmpty) {
+    return Image.network(value, width: double.infinity, fit: BoxFit.contain,
+      errorBuilder: (_, __, ___) => fallback);
+  }
+  try {
+    return Image.memory(base64Decode(value), width: double.infinity, fit: BoxFit.contain,
+      errorBuilder: (_, __, ___) => fallback);
+  } on FormatException {
+    return fallback;
   }
 }
 
